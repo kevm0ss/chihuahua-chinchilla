@@ -17,6 +17,7 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      overflow: hidden;
     }
 
     .container {
@@ -30,6 +31,7 @@
     .animal {
       text-align: center;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .animal img {
@@ -43,6 +45,17 @@
       background: transparent;
     }
 
+    /* Mobile responsive */
+    @media (max-width: 900px) {
+      .animal img {
+        width: 45vw;
+      }
+      .container {
+        gap: 10px;
+        padding: 10px;
+      }
+    }
+
     /* Click-to-start overlay */
     #start-overlay {
       position: fixed;
@@ -52,17 +65,78 @@
       height: 100%;
       background: #ffffff;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 1000;
       cursor: pointer;
     }
 
-    #start-overlay span {
+    #start-overlay .tap-text {
       font-family: 'Georgia', serif;
       font-size: 1.5rem;
       color: #999;
       letter-spacing: 1px;
+    }
+
+    /* Rotate phone prompt - only shown on mobile in portrait */
+    #start-overlay .rotate-prompt {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .rotate-prompt .phone-icon {
+      width: 60px;
+      height: 100px;
+      border: 3px solid #bbb;
+      border-radius: 10px;
+      position: relative;
+      animation: rotatePhone 2s ease-in-out infinite;
+      margin-bottom: 16px;
+    }
+
+    .rotate-prompt .phone-icon::before {
+      content: '';
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 14px;
+      border: 2px solid #bbb;
+      border-radius: 50%;
+    }
+
+    .rotate-prompt .arrow {
+      font-size: 2rem;
+      color: #bbb;
+      position: absolute;
+      top: 50%;
+      right: -35px;
+      transform: translateY(-50%);
+    }
+
+    .rotate-prompt p {
+      font-family: 'Georgia', serif;
+      font-size: 1.1rem;
+      color: #bbb;
+      letter-spacing: 0.5px;
+    }
+
+    @keyframes rotatePhone {
+      0%   { transform: rotate(0deg); }
+      30%  { transform: rotate(0deg); }
+      60%  { transform: rotate(-90deg); }
+      100% { transform: rotate(-90deg); }
+    }
+
+    /* Show rotate prompt on mobile portrait only */
+    @media (max-width: 768px) and (orientation: portrait) {
+      #start-overlay .rotate-prompt {
+        display: flex;
+      }
     }
   </style>
 </head>
@@ -70,7 +144,14 @@
 
   <!-- Click anywhere to unlock audio -->
   <div id="start-overlay">
-    <span>Click anywhere to start</span>
+    <div class="rotate-prompt">
+      <div style="position: relative; margin-bottom: 16px;">
+        <div class="phone-icon"></div>
+        <div class="arrow">&#x21BB;</div>
+      </div>
+      <p>Rotate your phone to landscape</p>
+    </div>
+    <span class="tap-text">Tap anywhere to start</span>
   </div>
 
   <div class="container">
@@ -92,7 +173,7 @@
     const chinchillaAudio = document.getElementById('chinchilla-audio');
     const overlay = document.getElementById('start-overlay');
 
-    // User clicks overlay to unlock audio playback
+    // User clicks/taps overlay to unlock audio playback
     overlay.addEventListener('click', () => {
       // Play and immediately pause both clips to unlock them
       chihuahuaAudio.play().then(() => chihuahuaAudio.pause()).catch(() => {});
@@ -113,25 +194,67 @@
     const chihuahuaImg = document.querySelector('#chihuahua img');
     const chinchillaImg = document.querySelector('#chinchilla img');
 
-    // Chihuahua hover - swap image and play audio
-    document.getElementById('chihuahua').addEventListener('mouseenter', () => {
-      chihuahuaImg.src = 'chihuahua_rollover.png';
-      chihuahuaAudio.currentTime = 0;
-      chihuahuaAudio.play();
-    });
-    document.getElementById('chihuahua').addEventListener('mouseleave', () => {
-      chihuahuaImg.src = 'chihuahua.png';
-    });
+    // Detect if device supports touch
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
-    // Chinchilla hover - swap image and play audio
-    document.getElementById('chinchilla').addEventListener('mouseenter', () => {
-      chinchillaImg.src = 'chincilla_rollover.png';
-      chinchillaAudio.currentTime = 0;
-      chinchillaAudio.play();
-    });
-    document.getElementById('chinchilla').addEventListener('mouseleave', () => {
-      chinchillaImg.src = 'chincilla.png';
-    });
+    if (isTouchDevice) {
+      // MOBILE: Tap to swap image + play audio, tap again (or tap other) to revert
+
+      let activeAnimal = null;
+
+      function resetAll() {
+        chihuahuaImg.src = 'chihuahua.png';
+        chinchillaImg.src = 'chincilla.png';
+        activeAnimal = null;
+      }
+
+      document.getElementById('chihuahua').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (activeAnimal === 'chihuahua') {
+          resetAll();
+        } else {
+          resetAll();
+          chihuahuaImg.src = 'chihuahua_rollover.png';
+          chihuahuaAudio.currentTime = 0;
+          chihuahuaAudio.play();
+          activeAnimal = 'chihuahua';
+        }
+      });
+
+      document.getElementById('chinchilla').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (activeAnimal === 'chinchilla') {
+          resetAll();
+        } else {
+          resetAll();
+          chinchillaImg.src = 'chincilla_rollover.png';
+          chinchillaAudio.currentTime = 0;
+          chinchillaAudio.play();
+          activeAnimal = 'chinchilla';
+        }
+      });
+
+    } else {
+      // DESKTOP: Hover to swap image + play audio
+
+      document.getElementById('chihuahua').addEventListener('mouseenter', () => {
+        chihuahuaImg.src = 'chihuahua_rollover.png';
+        chihuahuaAudio.currentTime = 0;
+        chihuahuaAudio.play();
+      });
+      document.getElementById('chihuahua').addEventListener('mouseleave', () => {
+        chihuahuaImg.src = 'chihuahua.png';
+      });
+
+      document.getElementById('chinchilla').addEventListener('mouseenter', () => {
+        chinchillaImg.src = 'chincilla_rollover.png';
+        chinchillaAudio.currentTime = 0;
+        chinchillaAudio.play();
+      });
+      document.getElementById('chinchilla').addEventListener('mouseleave', () => {
+        chinchillaImg.src = 'chincilla.png';
+      });
+    }
   </script>
 
 </body>
