@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chihuahua & Chinchilla</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 60px;
+      padding: 40px;
+    }
+
+    .animal {
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .animal img {
+      width: 400px;
+      height: auto;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      border-radius: 0;
+      display: block;
+      background: transparent;
+    }
+
+    /* Click-to-start overlay */
+    #start-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      cursor: pointer;
+    }
+
+    #start-overlay span {
+      font-family: 'Georgia', serif;
+      font-size: 1.5rem;
+      color: #999;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Click anywhere to unlock audio -->
+  <div id="start-overlay">
+    <span>Click anywhere to start</span>
+  </div>
+
+  <div class="container">
+    <div class="animal" id="chinchilla">
+      <img src="chincilla.png" alt="Chinchilla">
+    </div>
+
+    <div class="animal" id="chihuahua">
+      <img src="chihuahua.png" alt="Chihuahua">
+    </div>
+  </div>
+
+  <!-- Preload audio -->
+  <audio id="chihuahua-audio" src="chihuahua.m4a" preload="auto"></audio>
+  <audio id="chinchilla-audio" src="chinchilla.m4a" preload="auto"></audio>
+
+  <script>
+    const chihuahuaAudio = document.getElementById('chihuahua-audio');
+    const chinchillaAudio = document.getElementById('chinchilla-audio');
+    const overlay = document.getElementById('start-overlay');
+
+    // User clicks overlay to unlock audio playback
+    overlay.addEventListener('click', () => {
+      // Play and immediately pause both clips to unlock them
+      chihuahuaAudio.play().then(() => chihuahuaAudio.pause()).catch(() => {});
+      chinchillaAudio.play().then(() => chinchillaAudio.pause()).catch(() => {});
+      chihuahuaAudio.currentTime = 0;
+      chinchillaAudio.currentTime = 0;
+
+      // Remove overlay
+      overlay.style.display = 'none';
+    });
+
+    // Preload rollover images
+    const chihuahuaRollover = new Image();
+    chihuahuaRollover.src = 'chihuahua_rollover.png';
+    const chinchillaRollover = new Image();
+    chinchillaRollover.src = 'chincilla_rollover.png';
+
+    const chihuahuaImg = document.querySelector('#chihuahua img');
+    const chinchillaImg = document.querySelector('#chinchilla img');
+
+    // Chihuahua hover - swap image and play audio
+    document.getElementById('chihuahua').addEventListener('mouseenter', () => {
+      chihuahuaImg.src = 'chihuahua_rollover.png';
+      chihuahuaAudio.currentTime = 0;
+      chihuahuaAudio.play();
+    });
+    document.getElementById('chihuahua').addEventListener('mouseleave', () => {
+      chihuahuaImg.src = 'chihuahua.png';
+    });
+
+    // Chinchilla hover - swap image and play audio
+    document.getElementById('chinchilla').addEventListener('mouseenter', () => {
+      chinchillaImg.src = 'chincilla_rollover.png';
+      chinchillaAudio.currentTime = 0;
+      chinchillaAudio.play();
+    });
+    document.getElementById('chinchilla').addEventListener('mouseleave', () => {
+      chinchillaImg.src = 'chincilla.png';
+    });
+  </script>
+
+</body>
+</html>
